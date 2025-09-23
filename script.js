@@ -63,6 +63,7 @@ document.querySelectorAll('.navigation .navigation-items a, .sidebar a').forEach
 
 // ================= CATEGORY TABS AND DUAL CAROUSELS =================
 
+// ================= CATEGORY TABS AND DUAL CAROUSELS =================
 document.addEventListener('DOMContentLoaded', function() {
     // Category tabs functionality
     const categoryTabs = document.querySelectorAll('.category-tab');
@@ -80,19 +81,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 carousel.classList.remove('active');
             });
             
-            // Show the selected carousel (without animations)
+            // Show the selected carousel
             const category = this.getAttribute('data-category');
-            const targetCarousel = document.getElementById(`${category}-carousel`);
-            if (targetCarousel) {
-                // Temporarily disable transitions
-                targetCarousel.style.transition = 'none';
-                targetCarousel.classList.add('active');
-                
-                // Re-enable transitions after a brief delay
-                setTimeout(() => {
-                    targetCarousel.style.transition = '';
-                }, 50);
-            }
+            document.getElementById(`${category}-carousel`).classList.add('active');
         });
     });
     
@@ -142,9 +133,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
-
-
-
 
 
 
