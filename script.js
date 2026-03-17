@@ -61,77 +61,93 @@ document.querySelectorAll('.navigation .navigation-items a, .sidebar a').forEach
 });
 
 
-// ================= CATEGORY TABS AND DUAL CAROUSELS =================
-
-// ================= CATEGORY TABS AND DUAL CAROUSELS =================
+// ================= GALLERY FILTER & LIGHTBOX =================
 document.addEventListener('DOMContentLoaded', function() {
-    // Category tabs functionality
     const categoryTabs = document.querySelectorAll('.category-tab');
-    const carouselContainers = document.querySelectorAll('.carousel-container');
-    
+    const galleryItems = document.querySelectorAll('.gallery-item');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxCounter = document.getElementById('lightbox-counter');
+    const lightboxClose = document.querySelector('.lightbox-close');
+    const lightboxPrev = document.querySelector('.lightbox-prev');
+    const lightboxNext = document.querySelector('.lightbox-next');
+    let currentLightboxIndex = 0;
+    let visibleItems = [];
+
+    // Category filter
+    function applyFilter(category) {
+        galleryItems.forEach(item => {
+            if (item.getAttribute('data-category') === category) {
+                item.classList.remove('hidden');
+            } else {
+                item.classList.add('hidden');
+            }
+        });
+    }
+
+    // Apply default filter on load
+    applyFilter('alphabet');
+
     categoryTabs.forEach(tab => {
         tab.addEventListener('click', function() {
-            // Remove active class from all tabs
             categoryTabs.forEach(t => t.classList.remove('active'));
-            // Add active class to clicked tab
             this.classList.add('active');
-            
-            // Hide all carousels
-            carouselContainers.forEach(carousel => {
-                carousel.classList.remove('active');
-            });
-            
-            // Show the selected carousel
-            const category = this.getAttribute('data-category');
-            document.getElementById(`${category}-carousel`).classList.add('active');
+            applyFilter(this.getAttribute('data-category'));
         });
     });
-    
-    // Initialize both carousels
-    initializeCarousel('creative-carousel');
-    initializeCarousel('alphabet-carousel');
-    
-    function initializeCarousel(carouselId) {
-        const track = document.querySelector(`#${carouselId} .carousel-track`);
-        if (track) {
-            const slides = Array.from(track.children);
-            const prevBtn = document.querySelector(`#${carouselId} .carousel-btn.prev`);
-            const nextBtn = document.querySelector(`#${carouselId} .carousel-btn.next`);
-            let currentIndex = 0;
-            
-            function updateSlides() {
-                slides.forEach((slide, index) => {
-                    slide.className = 'carousel-slide';
-                    if (index === currentIndex) {
-                        slide.classList.add('active');
-                    } else if (index === (currentIndex - 1 + slides.length) % slides.length) {
-                        slide.classList.add('left-1');
-                    } else if (index === (currentIndex - 2 + slides.length) % slides.length) {
-                        slide.classList.add('left-2');
-                    } else if (index === (currentIndex + 1) % slides.length) {
-                        slide.classList.add('right-1');
-                    } else if (index === (currentIndex + 2) % slides.length) {
-                        slide.classList.add('right-2');
-                    }
-                });
-            }
-            
-            function moveNext() {
-                currentIndex = (currentIndex + 1) % slides.length;
-                updateSlides();
-            }
-            
-            function movePrev() {
-                currentIndex = (currentIndex - 1 + slides.length) % slides.length;
-                updateSlides();
-            }
-            
-            if (nextBtn) nextBtn.addEventListener('click', moveNext);
-            if (prevBtn) prevBtn.addEventListener('click', movePrev);
-            
-            updateSlides();
-        }
+
+    // Get currently visible items
+    function getVisibleItems() {
+        return Array.from(document.querySelectorAll('.gallery-item:not(.hidden)'));
     }
+
+    // Open lightbox
+    galleryItems.forEach(item => {
+        item.addEventListener('click', function() {
+            visibleItems = getVisibleItems();
+            currentLightboxIndex = visibleItems.indexOf(this);
+            openLightbox();
+        });
+    });
+
+    function openLightbox() {
+        const img = visibleItems[currentLightboxIndex].querySelector('img');
+        lightboxImg.src = img.src;
+        lightboxImg.alt = img.alt;
+        lightboxCounter.textContent = (currentLightboxIndex + 1) + ' / ' + visibleItems.length;
+        lightbox.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        lightbox.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    lightboxClose.addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', function(e) {
+        if (e.target === lightbox) closeLightbox();
+    });
+
+    lightboxPrev.addEventListener('click', function(e) {
+        e.stopPropagation();
+        currentLightboxIndex = (currentLightboxIndex - 1 + visibleItems.length) % visibleItems.length;
+        openLightbox();
+    });
+
+    lightboxNext.addEventListener('click', function(e) {
+        e.stopPropagation();
+        currentLightboxIndex = (currentLightboxIndex + 1) % visibleItems.length;
+        openLightbox();
+    });
+
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        if (!lightbox.classList.contains('active')) return;
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowLeft') lightboxPrev.click();
+        if (e.key === 'ArrowRight') lightboxNext.click();
+    });
 });
 
 
